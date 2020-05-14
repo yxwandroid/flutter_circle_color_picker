@@ -16,11 +16,13 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          backgroundColor: _currentColor,
+//          backgroundColor: _currentColor,
           title: const Text('Circle color picker sample'),
         ),
         body: Center(
           child: CircleColorPicker(
+            size: Size(280,280) ,
+            strokeWidth:8,
             initialColor: _currentColor,
             onChanged: _onColorChanged,
           ),
