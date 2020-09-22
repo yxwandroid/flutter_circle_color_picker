@@ -97,15 +97,15 @@ class _CircleColorPickerState extends State<CircleColorPicker>
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                              Text(
-                                '#${_color.value.toRadixString(16).substring(2)}',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color:
-                                      Theme.of(context).textTheme.caption.color,
-                                ),
-                              ),
+                              // Text(
+                              //   '#${_color.value.toRadixString(16).substring(2)}',
+                              //   style: TextStyle(
+                              //     fontSize: 24,
+                              //     fontWeight: FontWeight.bold,
+                              //     color:
+                              //         Theme.of(context).textTheme.caption.color,
+                              //   ),
+                              // ),
                               const SizedBox(height: 16),
                               Container(
                                 width: 30,
@@ -135,26 +135,26 @@ class _CircleColorPickerState extends State<CircleColorPicker>
             ),
           ),
         ),
-        Container(
-          margin: const EdgeInsets.only(left:8.0,top: 20,bottom: 20),
-          child: Text("亮度设置"),
-        ),
-        Center(
-          child: AnimatedBuilder(
-            animation: _hueController,
-            builder: (context, _) {
-              return _LightnessSlider(
-                initialLightness: widget.initialLightness,
-                width: 260,
-                thumbSize: 26,
-                hue: _hueController.value,
-                onChanged: (lightness) {
-                  _lightnessController.value = lightness;
-                },
-              );
-            },
-          ),
-        ),
+        // Container(
+        //   margin: const EdgeInsets.only(left:8.0,top: 20,bottom: 20),
+        //   child: Text("亮度设置"),
+        // ),
+        // Center(
+        //   child: AnimatedBuilder(
+        //     animation: _hueController,
+        //     builder: (context, _) {
+        //       return _LightnessSlider(
+        //         initialLightness: widget.initialLightness,
+        //         width: 260,
+        //         thumbSize: 26,
+        //         hue: _hueController.value,
+        //         onChanged: (lightness) {
+        //           _lightnessController.value = lightness;
+        //         },
+        //       );
+        //     },
+        //   ),
+        // ),
       ],
     );
   }
