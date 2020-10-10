@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+typedef ColorCodeBuilder = Widget Function(BuildContext context, Color color);
+
 class CircleColorPicker extends StatefulWidget {
   const CircleColorPicker({
     Key key,
@@ -11,6 +13,12 @@ class CircleColorPicker extends StatefulWidget {
     this.strokeWidth = 2,
     this.thumbSize = 32,
     this.initialColor = const Color.fromARGB(255, 255, 0, 0),
+    this.textStyle = const TextStyle(
+      fontSize: 24,
+      fontWeight: FontWeight.bold,
+      color: Colors.black,
+    ),
+    this.colorCodeBuilder,
   }) : super(key: key);
 
   /// Called during a drag when the user is selecting a color.
@@ -41,6 +49,17 @@ class CircleColorPicker extends StatefulWidget {
   /// Default value is Red.
   final Color initialColor;
 
+  /// Text style config
+  ///
+  /// Default value is Black
+  final TextStyle textStyle;
+
+  /// Widget builder that show color code section.
+  /// This functions is called every time color changed.
+  ///
+  /// Default is Text widget that shows rgb strings;
+  final ColorCodeBuilder colorCodeBuilder;
+
   double get initialLightness => HSLColor.fromColor(initialColor).lightness;
 
   double get initialHue => HSLColor.fromColor(initialColor).hue;
@@ -65,97 +84,72 @@ class _CircleColorPickerState extends State<CircleColorPicker>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment:CrossAxisAlignment.start ,
-      children: <Widget>[
-        Container(
-          margin: const EdgeInsets.only(left:8.0,top: 20,bottom: 20),
-          child: Text("颜色设置"),
-        ),
-        Center(
-          child: SizedBox(
-            width: widget.size.width,
-            height: widget.size.height,
-            child: Stack(
-              children: <Widget>[
-                _HuePicker(
-                  initialHue: widget.initialHue,
-                  size: widget.size,
-                  strokeWidth: widget.strokeWidth,
-                  thumbSize: widget.thumbSize,
-                  onChanged: (hue) {
-                    _hueController.value = hue * 180 / pi;
-                  },
-                ),
-                AnimatedBuilder(
-                  animation: _hueController,
-                  builder: (context, child) {
-                    return AnimatedBuilder(
-                      animation: _lightnessController,
-                      builder: (context, _) {
-                        return Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Text(
-                                '#${_color.value.toRadixString(16).substring(2)}',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color:
-                                      Theme.of(context).textTheme.caption.color,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Container(
-                                width: 30,
-                                height: 30,
-                                decoration: BoxDecoration(
-                                  color: _color,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    width: 3,
-                                    color: HSLColor.fromColor(_color)
-                                        .withLightness(
-                                          _lightnessController.value * 4 / 5,
-                                        )
-                                        .toColor(),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
+    return SizedBox(
+      width: widget.size.width,
+      height: widget.size.height,
+      child: Stack(
+        children: <Widget>[
+          _HuePicker(
+            initialHue: widget.initialHue,
+            size: widget.size,
+            strokeWidth: widget.strokeWidth,
+            thumbSize: widget.thumbSize,
+            onChanged: (hue) {
+              _hueController.value = hue * 180 / pi;
+            },
           ),
-        ),
-        Container(
-          margin: const EdgeInsets.only(left:8.0,top: 20,bottom: 20),
-          child: Text("亮度设置"),
-        ),
-        Center(
-          child: AnimatedBuilder(
+          AnimatedBuilder(
             animation: _hueController,
-            builder: (context, _) {
-              return _LightnessSlider(
-                initialLightness: widget.initialLightness,
-                width: 260,
-                thumbSize: 26,
-                hue: _hueController.value,
-                onChanged: (lightness) {
-                  _lightnessController.value = lightness;
+            builder: (context, child) {
+              return AnimatedBuilder(
+                animation: _lightnessController,
+                builder: (context, _) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        widget.colorCodeBuilder != null
+                            ? widget.colorCodeBuilder(context, _color)
+                            : Text(
+                                '#${_color.value.toRadixString(16).substring(2)}',
+                                style: widget.textStyle,
+                              ),
+                        const SizedBox(height: 16),
+                        Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: _color,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              width: 3,
+                              color: HSLColor.fromColor(_color)
+                                  .withLightness(
+                                    _lightnessController.value * 4 / 5,
+                                  )
+                                  .toColor(),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _LightnessSlider(
+                          initialLightness: widget.initialLightness,
+                          width: 140,
+                          thumbSize: 26,
+                          hue: _hueController.value,
+                          onChanged: (lightness) {
+                            _lightnessController.value = lightness;
+                          },
+                        ),
+                      ],
+                    ),
+                  );
                 },
               );
             },
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -466,7 +460,7 @@ class _CirclePickerPainter extends CustomPainter {
     );
 
     final sweepShader = sweepGradient.createShader(
-      Rect.fromLTWH(0, 0, radio, radio),
+      Rect.fromCircle(center: center, radius: radio),
     );
 
     canvas.drawCircle(
@@ -474,7 +468,6 @@ class _CirclePickerPainter extends CustomPainter {
       radio,
       Paint()
         ..style = PaintingStyle.stroke
-        ..invertColors
         ..strokeWidth = strokeWidth * 2
         ..shader = sweepShader,
     );
